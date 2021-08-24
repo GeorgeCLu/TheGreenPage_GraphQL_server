@@ -6,13 +6,14 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "build-prod": "npm install && npm start"
+    "build-prod": "npm install && npm run"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "apollo-server": "^2.21.0",
     "axios": "^0.21.1",
+    "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "graphql": "^15.5.0",
     "mongoose": "^5.11.17",

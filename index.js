@@ -10,6 +10,8 @@ const Person = require('./models/person')
 
 const axios =require('axios');
 
+const cors = require('cors')
+
 // https://eva.pingutil.com/
 
 const validateEmailService = async (emailToValidate) => {
@@ -215,6 +217,14 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
 })
+
+// app.use(cors())
+
+server.applyMiddleware({
+  app,
+  path: '/',
+  cors: false,
+});
 
 server.listen().then(({ url }) => {
   console.log(`Server ready at ${url}`)
