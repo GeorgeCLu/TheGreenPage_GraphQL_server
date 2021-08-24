@@ -12,6 +12,8 @@ const axios =require('axios');
 
 const cors = require('cors')
 
+const express = require('express')
+
 // https://eva.pingutil.com/
 
 const validateEmailService = async (emailToValidate) => {
@@ -219,13 +221,24 @@ const server = new ApolloServer({
 })
 
 // app.use(cors())
+const corsOptions = {
+  origin: '*',
+  credentials: true
+};
 
+const corsOptions2 = {
+  origin: "http://localhost:3000",
+  credentials: true
+}
+
+const app = express();
+app.use(cors(corsOptions))
 server.applyMiddleware({
   app,
-  path: '/',
   cors: false,
 });
 
-server.listen().then(({ url }) => {
+// https://stackoverflow.com/questions/52061453/deploying-apollo-graphql-server-on-azure
+server.listen({ port: process.env.PORT || 4000 }).then(({ url }) => {
   console.log(`Server ready at ${url}`)
 })
