@@ -10,23 +10,33 @@ const schema = new mongoose.Schema({
   phone: {
     type: String,
     required: true,
-    minlength: 5
+    minlength: 3
   },
   street: {
     type: String,
     required: true,
-    minlength: 5
+    minlength: 1
   },
   city: {
     type: String,
     required: true,
-    minlength: 3
+    minlength: 1
   },
   emailAddress: {
     type: String,
     required: true,
     minlength: 5
   },
+  category: {
+    type: String,
+    required: true,
+    minlength: 1
+  },
+  description: {
+    type: String,
+    required: true,
+    minlength: 1
+  },
 })
 
-module.exports = mongoose.model('Person', schema)
+module.exports = mongoose.model('Listing', schema)

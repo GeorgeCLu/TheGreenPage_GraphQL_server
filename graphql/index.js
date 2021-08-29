@@ -3,7 +3,7 @@
 const config = require('./utils/config');
 
 const mongoose = require('mongoose')
-const Person = require('./models/person')
+const Listing = require('./models/listing')
 
 // const MONGODB_URI = ''
 
@@ -12,8 +12,6 @@ const axios =require('axios');
 // https://eva.pingutil.com/
 
 const { ApolloServer, gql, UserInputError } = require('apollo-server-azure-functions');
-
-
 
 const validateEmailService = async (emailToValidate) => {
     const queryUrl = 'https://api.eva.pingutil.com/email?email=' + emailToValidate//test@mail7.io'
@@ -37,10 +35,12 @@ mongoose.connect(config.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology
 
 // Construct a schema, using GraphQL schema language
 const typeDefs = gql`
-type Person {
+type Listing {
   name: String!
   phone: String
   emailAddress:String!
+  category:String!
+  description:String!
   address: Address!
   id: ID!
 }
@@ -56,60 +56,60 @@ enum YesNo {
 }
 
 type Query {
-  personCount: Int!
-  allPersons(phone: YesNo): [Person!]!
-  allPersons2: String
-  allPersons3: String
-  findPerson(name: String!): Person
-  findPersonById(id: ID!): Person
+  listingCount: Int!
+  allListings(phone: YesNo): [Listing!]!
+  findListing(name: String!): Listing
+  findListingById(id: ID!): Listing
 }
 
 type Mutation {
-  addPerson(
+  addListing(
     name: String!
     phone: String
     street: String!
     city: String!
     emailAddress: String!
-  ): Person
-  deletePerson(
+    category:String!
+    description:String!
+  ): Listing
+  deleteListing(
     id: ID!
-  ): Person
+  ): Listing
   editNumber(
     name: String!
     phone: String!
-  ): Person
+  ): Listing
   editEmailAddress(
     name: String!
     emailAddress: String!
-  ): Person
-  editPerson(
+  ): Listing
+  editListing(
     name: String!
     phone: String
     street: String!
     city: String!
     emailAddress: String!
-  ): Person
+    category:String!
+    description:String!
+  ): Listing
 } 
 `;
 
 // Provide resolver functions for your schema fields
 const resolvers = {
   Query: {
-    personCount: () => Person.collection.countDocuments(),
-    allPersons: (root, args) => {
+    listingCount: () => Listing.collection.countDocuments(),
+    allListings: (root, args) => {
       console.log(args)
       if (!args.phone) {
-        return Person.find({})
+        return Listing.find({})
       }
-      return Person.find({ phone: { $exists: args.phone === 'YES'  }})
+      return Listing.find({ phone: { $exists: args.phone === 'YES'  }})
     },
-    allPersons2: () => 'Hello world!',
-    allPersons3: () =>  'Hello world!',
-    findPerson: (root, args) => Person.findOne({ name: args.name }),
-    findPersonById: (root, args) => Person.findById({ id: args.id })
+    findListing: (root, args) => Listing.findOne({ name: args.name }),
+    findListingById: (root, args) => Listing.findById({ id: args.id })
   },
-  Person: {
+  Listing: {
     address: (root) => {
       return {
         street: root.street,
@@ -118,9 +118,9 @@ const resolvers = {
     }
   },
   Mutation: {
-    addPerson: async (root, args) => {
-      const person = new Person({ ...args })
-      await validateEmailService(person.emailAddress).then(
+    addListing: async (root, args) => {
+      const listing = new Listing({ ...args })
+      await validateEmailService(listing.emailAddress).then(
         (valid) => {
           // console.log("email validated")
           // console.log(valid)
@@ -137,17 +137,17 @@ const resolvers = {
       );
       try {
         // console.log('saving')
-        await person.save()
+        await listing.save()
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args,
         })
       }
     },
-    deletePerson: async (root, args) => {
-      // console.log("deleteperson")
+    deleteListing: async (root, args) => {
       try {
-        await person.findByIdAndRemove(args.id)
+        // await Listing.findByIdAndRemove(args.id)
+        // await listing.findByIdAndRemove(args.id)
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args,
@@ -155,10 +155,10 @@ const resolvers = {
       }
     },
     editNumber: async (root, args) => {
-      const person = await Person.findOne({ name: args.name })
-      person.phone = args.phone
+      const listing = await Listing.findOne({ name: args.name })
+      listing.phone = args.phone
       try {
-        await person.save()
+        await listing.save()
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args,
@@ -166,8 +166,8 @@ const resolvers = {
       }
     },
     editEmailAddress: async (root, args) => {
-      const person = await Person.findOne({ name: args.name })
-      person.emailAddress = args.emailAddress
+      const listing = await Listing.findOne({ name: args.name })
+      listing.emailAddress = args.emailAddress
       await validateEmailService(args.emailAddress).then(
         (valid) => {
           //if (valid) {
@@ -182,7 +182,7 @@ const resolvers = {
         }
       );
       try {
-        await person.save()
+        await listing.save()
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args,
@@ -190,12 +190,14 @@ const resolvers = {
       }
     },
 
-    editPerson: async (root, args) => {
-      const person = await Person.findOne({ name: args.name })
-      person.phone = args.phone
-      person.street = args.street
-      person.city = args.city
-      person.emailAddress = args.emailAddress
+    editListing: async (root, args) => {
+      const listing = await Listing.findOne({ name: args.name })
+      listing.phone = args.phone
+      listing.street = args.street
+      listing.city = args.city
+      listing.emailAddress = args.emailAddress
+      listing.category = args.category
+      listing.description = args.description
 
       await validateEmailService(args.emailAddress).then(
         (valid) => {
@@ -211,7 +213,7 @@ const resolvers = {
         }
       );
       try {
-        await person.save()
+        await listing.save()
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args,
