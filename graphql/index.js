@@ -141,13 +141,18 @@ const resolvers = {
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args,
-        })
+        });
       }
     },
     deleteListing: async (root, args) => {
+      
       try {
-        // await Listing.findByIdAndRemove(args.id)
+        // redundant - only for testing
+        const deleted_Listing = Listing.findById({ id: args.id });
+        
+        await Listing.findByIdAndDelete({ id: args.id });
         // await listing.findByIdAndRemove(args.id)
+        return deleted_Listing;
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args,
