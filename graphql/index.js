@@ -73,7 +73,7 @@ type Mutation {
     description:String!
   ): Listing
   deleteListing(
-    id: ID!
+    name: String!
   ): Listing
   editNumber(
     name: String!
@@ -146,12 +146,11 @@ const resolvers = {
       }
     },
     deleteListing: async (root, args) => {
-      // https://developer.okta.com/blog/2019/05/29/build-crud-nodejs-graphql
       try {
         // redundant - only for testing
-        const deleted_Listing = Listing.findById({ id: args.id });
-        // https://stackoverflow.com/questions/64717067/delete-from-mongodb-by-id
-        await Listing.findByIdAndDelete({ id: args.id });
+        const deleted_Listing = Listing.findOne({ name: args.name });
+  
+        await Listing.findOneAndDelete({ name: args.name });
         // await listing.findByIdAndRemove(args.id)
         return deleted_Listing;
       } catch (error) {
