@@ -137,7 +137,8 @@ const resolvers = {
       );
       try {
         // console.log('saving')
-        await listing.save()
+        await listing.save();
+        return Listing.findOne({ name: args.name });
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args,
@@ -145,11 +146,11 @@ const resolvers = {
       }
     },
     deleteListing: async (root, args) => {
-      
+      // https://developer.okta.com/blog/2019/05/29/build-crud-nodejs-graphql
       try {
         // redundant - only for testing
         const deleted_Listing = Listing.findById({ id: args.id });
-        
+        // https://stackoverflow.com/questions/64717067/delete-from-mongodb-by-id
         await Listing.findByIdAndDelete({ id: args.id });
         // await listing.findByIdAndRemove(args.id)
         return deleted_Listing;
