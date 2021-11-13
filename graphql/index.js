@@ -147,12 +147,9 @@ const resolvers = {
     },
     deleteListing: async (root, args) => {
       try {
-        // redundant - only for testing
-        const deleted_Listing = Listing.findOne({ name: args.name });
-  
-        await Listing.findOneAndDelete({ name: args.name });
+        return await Listing.findOneAndDelete({ name: args.name });
         // await listing.findByIdAndRemove(args.id)
-        return deleted_Listing;
+        // return deleted_Listing;
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args,
