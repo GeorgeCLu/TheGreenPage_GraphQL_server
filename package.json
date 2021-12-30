@@ -12,7 +12,8 @@
     "axios": "^0.21.1",
     "dotenv": "^10.0.0",
     "graphql": "^15.5.1",
-    "mongoose": "^5.10.0"
+    "mongoose": "^5.10.0",
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "eslint": "^8.2.0",
