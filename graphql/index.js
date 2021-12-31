@@ -7,6 +7,7 @@ const axios = require('axios');
 
 const { ApolloServer, gql, UserInputError } = require('apollo-server-azure-functions');
 const Listing = require('./models/listing');
+const User = require('./models/user');
 const config = require('./utils/config');
 
 const validateEmailService = async (emailToValidate) => {
@@ -74,6 +75,10 @@ type User {
   listings: [Listing!]
 }
 
+type Token {
+  token: String!
+}
+
 type Mutation {
   addListing(
     name: String!
@@ -104,6 +109,11 @@ type Mutation {
     category:String!
     description:String!
   ): Listing
+  signUp(
+    username: String!
+    email: String!
+    password: String!
+  ): Token!
 } 
 `;
 
