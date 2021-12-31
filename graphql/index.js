@@ -67,6 +67,13 @@ type Query {
   findListingById(id: ID!): Listing
 }
 
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  listings: [Listing!]
+}
+
 type Mutation {
   addListing(
     name: String!
