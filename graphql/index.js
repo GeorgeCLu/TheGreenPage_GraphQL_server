@@ -24,6 +24,10 @@ const validateEmailService = async (emailToValidate) => {
   return response.data.data.valid_syntax;
 };
 
+const createToken = async (user) => {
+  // to fill in
+};
+
 // eslint-disable-next-line no-console
 console.log('connecting to', config.MONGODB_URI);
 
@@ -241,6 +245,20 @@ const resolvers = {
           invalidArgs: args,
         });
       }
+    },
+
+    signUp: async (
+      parent,
+      { username, email, password },
+      { models },
+    ) => {
+      const user = await models.User.create({
+        username,
+        email,
+        password,
+      });
+
+      return { token: createToken(user) };
     },
   },
 };
