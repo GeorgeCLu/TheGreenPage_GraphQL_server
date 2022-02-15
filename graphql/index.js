@@ -7,9 +7,12 @@ const axios = require('axios');
 
 const { ApolloServer, gql, UserInputError } = require('apollo-server-azure-functions');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const Listing = require('./models/listing');
 const User = require('./models/user');
 const config = require('./utils/config');
+
+const JWT_SECRET = 'NEED_HERE_A_SECRET_KEY';
 
 const validateEmailService = async (emailToValidate) => {
   const queryUrl = `https://api.eva.pingutil.com/email?email=${emailToValidate}`;
@@ -25,8 +28,12 @@ const validateEmailService = async (emailToValidate) => {
   return response.data.data.valid_syntax;
 };
 
-const createToken = async (user) => {
-  // to fill in
+const createToken = async (user, secret, expiresIn) => {
+  const { id, email, username } = user;
+  // eslint-disable-next-line no-return-await
+  return await jwt.sign({ id, email, username }, secret, {
+    expiresIn,
+  });
 };
 
 // eslint-disable-next-line no-console
@@ -71,6 +78,7 @@ type Query {
   allListings(phone: YesNo): [Listing!]!
   findListing(name: String!): Listing
   findListingById(id: ID!): Listing
+  me: User
 }
 
 type User {
@@ -251,7 +259,7 @@ const resolvers = {
     signUp: async (
       parent,
       { username, email, password },
-      { models },
+      { models, secret },
     ) => {
       const saltRounds = 10;
       const passwordHash = await bcrypt.hash(password, saltRounds);
@@ -262,12 +270,18 @@ const resolvers = {
         passwordHash,
       });
 
-      return { token: createToken(user) };
+      return { token: createToken(user, secret, '30m') };
     },
   },
 };
 
-const server = new ApolloServer({ typeDefs, resolvers });
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: async () => ({
+    secret: process.env.SECRET,
+  }),
+});
 
 // exports.graphqlHandler = server.createHandler();
 module.exports = server.createHandler({
