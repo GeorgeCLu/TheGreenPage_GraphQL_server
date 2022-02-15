@@ -10,6 +10,7 @@
   "dependencies": {
     "apollo-server-azure-functions": "^3.3.0",
     "axios": "^0.21.1",
+    "bcrypt": "^5.0.1",
     "dotenv": "^10.0.0",
     "graphql": "^15.5.1",
     "mongoose": "^5.10.0",

@@ -15,11 +15,9 @@ const schema = new mongoose.Schema({
     minlength: 1,
     validate: [{ validator: isEmail, msg: 'Invalid email.' }],
   },
-  password: {
+  passwordHash: {
     type: String,
     required: true,
-    minlength: 7,
-    maxLength: 42,
   },
 });
 

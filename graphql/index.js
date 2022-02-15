@@ -6,6 +6,7 @@ const axios = require('axios');
 // connect to https://eva.pingutil.com/ for email validation
 
 const { ApolloServer, gql, UserInputError } = require('apollo-server-azure-functions');
+const bcrypt = require('bcrypt');
 const Listing = require('./models/listing');
 const User = require('./models/user');
 const config = require('./utils/config');
@@ -252,10 +253,13 @@ const resolvers = {
       { username, email, password },
       { models },
     ) => {
+      const saltRounds = 10;
+      const passwordHash = await bcrypt.hash(password, saltRounds);
+
       const user = await models.User.create({
         username,
         email,
-        password,
+        passwordHash,
       });
 
       return { token: createToken(user) };
