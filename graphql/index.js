@@ -5,14 +5,14 @@ const axios = require('axios');
 
 // connect to https://eva.pingutil.com/ for email validation
 
-const { ApolloServer, gql, UserInputError } = require('apollo-server-azure-functions');
+const {
+  ApolloServer, gql, UserInputError, AuthenticationError,
+} = require('apollo-server-azure-functions');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Listing = require('./models/listing');
 const User = require('./models/user');
 const config = require('./utils/config');
-
-const JWT_SECRET = 'NEED_HERE_A_SECRET_KEY';
 
 const validateEmailService = async (emailToValidate) => {
   const queryUrl = `https://api.eva.pingutil.com/email?email=${emailToValidate}`;
@@ -125,6 +125,10 @@ type Mutation {
   signUp(
     username: String!
     email: String!
+    password: String!
+  ): Token!
+  signIn(
+    login: String!
     password: String!
   ): Token!
 } 
@@ -264,23 +268,69 @@ const resolvers = {
       const saltRounds = 10;
       const passwordHash = await bcrypt.hash(password, saltRounds);
 
-      const user = await models.User.create({
+      const user = new User({
         username,
         email,
         passwordHash,
       });
 
+      const savedUser = await user.save();
+
+      /*
+      const user = await models.User.create({
+        username,
+        email,
+        passwordHash,
+      }); */
+
+      return { token: createToken(savedUser, secret, '30m') };
+    },
+
+    signIn: async (
+      parent,
+      { login, password },
+      // eslint-disable-next-line no-unused-vars
+      { models, secret },
+    ) => {
+      const user = await User.findOne({ username: login });
+      // await models.User.findByLogin(login);
+      if (!user) {
+        throw new UserInputError(
+          'No user found with this login credentials.',
+        );
+      }
+
+      const isValid = user === null
+        ? false
+        : await bcrypt.compare(password, user.passwordHash);
+
+      if (!isValid) {
+        throw new AuthenticationError('Invalid password.');
+      }
+
       return { token: createToken(user, secret, '30m') };
     },
+
   },
 };
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: async () => ({
-    secret: process.env.SECRET,
-  }),
+  context: async ({ req }) => {
+    const auth = req ? req.headers.authorization : null;
+    if (auth && auth.toLowerCase().startsWith('bearer ')) {
+      const decodedToken = jwt.verify(auth.substring(7), process.env.SECRET);
+      const currentUser = await User.findById(decodedToken.id);
+      return {
+        currentUser,
+        secret: process.env.SECRET,
+      };
+    }
+    return {
+      secret: process.env.SECRET,
+    };
+  },
 });
 
 // exports.graphqlHandler = server.createHandler();
